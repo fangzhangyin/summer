@@ -1,1 +1,1 @@
-include ':app', ':realm', ':wifimanager'
+include ':app', ':realm', ':wifimanager', ':broadcast'

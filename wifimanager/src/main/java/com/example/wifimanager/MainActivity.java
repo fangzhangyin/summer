@@ -36,7 +36,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button fresh;
     @BindView(R.id.wifiall)
     ListView wifiall;
-
+    @BindView(R.id.wifialls)
+    ListView wifialls;
 
     private BaseFullDialog mBaseFullDialog;
     private BaseFullDialog.Builder builder;
@@ -44,10 +45,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String password;
     private WifiConfiguration configuration;
     private int networkId;
+    private autobase autobase;
 
     private List<ScanResult> all;
     private List<String> wall;
-    private myadapt adapter;
+    private List<String> walls;
+    private List<WifiConfiguration>confs;
+    private autobase adapter;
 
 
     private WifiManager wifiManager;
@@ -66,36 +70,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.fresh:
                 all = new ArrayList<ScanResult>();
                 wall = new ArrayList<String>();
-                wifiManager =(WifiManager) MainActivity.this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                walls = new ArrayList<String>();
+                confs=new ArrayList<WifiConfiguration>();
+                wifiManager = (WifiManager) MainActivity.this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                 all = wifiManager.getScanResults();
                 if (all != null) {
                     for (ScanResult result : all) {
                         wall.add(result.SSID);
-                        adapter = new myadapt();
-                        wifiall.setAdapter(adapter);
-                        wifiall.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                //Toast.makeText(MainActivity.this, wall.get(position).toString(),Toast.LENGTH_SHORT).show();
-                                wifiname=wall.get(position).toString();
-                                show();
-                                builder.getTextView(R.id.edit_text1).setText(wifiname);
-                            }
-                        });
                     }
-                    //autobase.myadapt(wall,MainActivity.this,R.layout.wifilist1,R.id.wifi);
                 }
+                for (WifiConfiguration conf : wifiManager.getConfiguredNetworks()) {
+                    for(String ssid:wall){
+                        if(conf.SSID.equals(String.format("\"%s\"", ssid))){
+                            walls.add(conf.SSID);
+                            confs.add(conf);
+                        }
+                    }
+                }
+                showlist();
                 break;
             case R.id.btn_dialog_left:
                 mBaseFullDialog.dismiss();
                 break;
             case R.id.btn_dialog_right:
-                password=builder.getEditText(R.id.edit_text2).getText().toString().trim();
-                if(password==null||password.equals("")){
-                    Toast.makeText(MainActivity.this,"请输入密码",Toast.LENGTH_SHORT).show();
-                }else{
-                    configuration=new WifiConfiguration();
-                    configuration.SSID="\"" + wifiname + "\"";
+                password = builder.getEditText(R.id.edit_text2).getText().toString().trim();
+                if (password == null || password.equals("")) {
+                    Toast.makeText(MainActivity.this, "请输入密码", Toast.LENGTH_SHORT).show();
+                } else {
+                    //wps类型的wifi配网
+                    configuration = new WifiConfiguration();
+                    configuration.SSID = "\"" + wifiname + "\"";
                     configuration.preSharedKey = "\"" + password + "\"";
                     configuration.hiddenSSID = true;
                     configuration.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
@@ -115,6 +119,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    private void showlist() {
+        adapter = new autobase(wall, MainActivity.this);
+        wifiall.setAdapter(adapter);
+        wifiall.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //Toast.makeText(MainActivity.this, wall.get(position).toString(),Toast.LENGTH_SHORT).show();
+                wifiname = wall.get(position).toString();
+                show();
+                builder.getTextView(R.id.edit_text1).setText(wifiname);
+            }
+        });
+        adapter = new autobase(walls, MainActivity.this);
+        wifialls.setAdapter(adapter);
+        wifialls.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    networkId = confs.get(position).networkId;
+                    boolean connected = wifiManager.reconnect();
+                    wifiManager.enableNetwork(networkId, true);
+            }
+        });
+    }
+
     private void show() {
         builder = new BaseFullDialog.Builder(this);
         mBaseFullDialog = builder.setlayout(R.layout.connect)
@@ -126,33 +154,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBaseFullDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
     }
 
-    public class myadapt extends BaseAdapter {
-
-        @Override
-        public int getCount() {
-            return wall.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return wall.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
-            View view = layoutInflater.inflate(R.layout.wifilist1, null);
-            TextView wifi = (TextView) view.findViewById(R.id.wifi);
-            wifi.setText(wall.get(position));
-            return view;
-        }
-    }
-
-
-
 }
+
