@@ -1,10 +1,16 @@
 package com.example.wifimanager;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -39,6 +45,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @BindView(R.id.wifialls)
     ListView wifialls;
 
+    @BindView(R.id.pass)
+    TextView pass;
+
     private BaseFullDialog mBaseFullDialog;
     private BaseFullDialog.Builder builder;
     private String wifiname;
@@ -52,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private List<String> walls;
     private List<WifiConfiguration>confs;
     private autobase adapter;
+    private LocationManager locationManager;
 
 
     private WifiManager wifiManager;
@@ -62,8 +72,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         ButterKnife.bind(MainActivity.this);
         fresh.setOnClickListener(this);
+
+        //获取用户的定位服务请求。
+        ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},0);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode==0){
+            if(grantResults[0]==PackageManager.PERMISSION_GRANTED){
+            //Toast.makeText(MainActivity.this,"定位服务已开启",Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(MainActivity.this,"请先开启定位服务",Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
+        super.onRequestPermissionsResult(requestCode,permissions,grantResults);
+    }
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -113,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     wifiManager.saveConfiguration();
                     boolean connected = wifiManager.reconnect();
                     wifiManager.enableNetwork(networkId, true);
+                    pass.setText(password);
                 }
                 break;
         }
@@ -139,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     networkId = confs.get(position).networkId;
                     boolean connected = wifiManager.reconnect();
                     wifiManager.enableNetwork(networkId, true);
+                    pass.setText(confs.get(position).preSharedKey.toString());
             }
         });
     }
@@ -153,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBaseFullDialog.show();
         mBaseFullDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
     }
+
 
 }
 
