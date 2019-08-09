@@ -1,1 +1,1 @@
-include ':app', ':realm', ':wifimanager', ':broadcast', ':servicer', ':popwindow'
+include ':app', ':realm', ':wifimanager', ':broadcast', ':servicer', ':popwindow', ':afinal_kuangjia', ':xutils'
