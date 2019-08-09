@@ -23,4 +23,11 @@
         android:layout_height="wrap_content"
         android:text="发送一条通知"
         />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="新页面"
+        android:id="@+id/start1"
+        />
 </LinearLayout>
