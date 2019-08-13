@@ -35,5 +35,18 @@
         android:text="登陆"
         />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="选择文件"
+        android:id="@+id/chosefile"
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/up"
+        android:text="上传文件"
+        />
 
 </LinearLayout>
